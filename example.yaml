@@ -1,0 +1,14 @@
+name: "Example Action"
+
+on:
+  pull_request:
+    paths:
+      - "**/*.go"
+
+jobs:
+  echo:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Echo"
+        run: |
+          echo Hello there!
