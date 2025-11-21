@@ -1,17 +1,19 @@
 package cmds
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 
-	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 
-	"github.com/telton/rehearse/parser"
+	"github.com/telton/rehearse/workflow"
 )
 
 var (
-	event string
+	eventName        string
+	ref              string
+	eventPayloadFile string
 
 	dryrun = &cobra.Command{
 		Use:     "dryrun [workflow file]",
@@ -32,42 +34,28 @@ var (
 			cobra.CheckErr(err)
 			defer f.Close()
 
-			wf, err := parser.NewWorkflow(f)
+			wf, err := workflow.New(f)
 			cobra.CheckErr(err)
 
-			log.Infof("Starting workflow: %s", wf.Name)
+			var eventPayload map[string]any
+			if eventPayloadFile != "" {
+				evFile, err := os.Open(eventPayloadFile)
+				cobra.CheckErr(err)
 
-			if event == "pull_request" && wf.On.PullRequest != nil {
-				log.Infof("Pull request event triggered")
-				if len(wf.On.PullRequest.Paths) > 0 {
-					log.Info("Paths:")
-				}
-				for _, p := range wf.On.PullRequest.Paths {
-					log.Printf("\t %s", p)
-				}
+				err = json.NewDecoder(evFile).Decode(&eventPayload)
+				cobra.CheckErr(err)
 			}
-			if event == "push" && wf.On.Push != nil {
-				log.Infof("Push event triggered")
-				if len(wf.On.Push.Branches) > 0 {
-					log.Info("Branches:")
-				}
-				for _, b := range wf.On.Push.Branches {
-					log.Printf("\t %s", b)
-				}
-				if len(wf.On.Push.Paths) > 0 {
-					log.Info("Paths:")
-				}
-				for _, p := range wf.On.Push.Paths {
-					log.Printf("\t %s", p)
-				}
-			}
-			// TODO: add workflow_dispatch
 
-			log.Info("Workflow run complete")
+			wfCtx, err := workflow.NewContext(eventName, ref, eventPayload)
+			cobra.CheckErr(err)
+
+			wf.DryRun(wfCtx)
 		},
 	}
 )
 
 func init() {
-	dryrun.PersistentFlags().StringVar(&event, "event", "push", "The GitHub event to simulate")
+	dryrun.PersistentFlags().StringVar(&eventName, "event-name", "push", "The GitHub event to simulate")
+	dryrun.PersistentFlags().StringVar(&ref, "ref", "", "The git ref to use")
+	dryrun.PersistentFlags().StringVar(&eventPayloadFile, "event-payload-file", "", "The filepath to the event payload")
 }
