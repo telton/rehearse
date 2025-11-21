@@ -6,7 +6,7 @@ import (
 )
 
 // Result holds the evaluation result and trace.
-type Result struct {
+type EvaluationResult struct {
 	Value any
 	Trace string
 }
@@ -22,7 +22,7 @@ func NewEvaluator(ctx *Context) *Evaluator {
 	}
 }
 
-func (e *Evaluator) Evaluate(expr string) (*Result, error) {
+func (e *Evaluator) Evaluate(expr string) (*EvaluationResult, error) {
 	// Strip ${{ }} wrapper if present.
 	expr = strings.TrimSpace(expr)
 	if strings.HasPrefix(expr, "${{") && strings.HasSuffix(expr, "}}") {
@@ -46,17 +46,17 @@ func (e *Evaluator) Evaluate(expr string) (*Result, error) {
 	return e.eval(node)
 }
 
-func (e *Evaluator) eval(node Node) (*Result, error) {
+func (e *Evaluator) eval(node Node) (*EvaluationResult, error) {
 	switch n := node.(type) {
 	case *LiteralNode:
-		return &Result{Value: n.Value, Trace: formatValue(n.Value)}, nil
+		return &EvaluationResult{Value: n.Value, Trace: formatValue(n.Value)}, nil
 
 	case *ContextAccessNode:
 		val, ok := e.ctx.Lookup(n.Path)
 		if !ok {
-			return &Result{Value: nil, Trace: fmt.Sprintf("%s -> null", n.Path)}
+			return &EvaluationResult{Value: nil, Trace: fmt.Sprintf("%s -> null", n.Path)}, nil
 		}
-		return &Result{Value: val, Trace: fmt.Sprintf("%s -> %s", n.Path, formatValue(val))}, nil
+		return &EvaluationResult{Value: val, Trace: fmt.Sprintf("%s -> %s", n.Path, formatValue(val))}, nil
 
 	case *BinaryOpNode:
 		left, err := e.eval(n.Left)
@@ -71,9 +71,9 @@ func (e *Evaluator) eval(node Node) (*Result, error) {
 
 		result := applyBinaryOp(n.Op, left.Value, right.Value)
 		trace := fmt.Sprintf("%s %s %s -> %s", left.Trace, n.Op, right.Trace, formatValue(result))
-		return &Result{Value: result, Trace: trace}, nil
+		return &EvaluationResult{Value: result, Trace: trace}, nil
 
-	case *FunctionalCallNode:
+	case *FunctionCallNode:
 		var args []any
 		var argTraces []string
 
@@ -91,8 +91,10 @@ func (e *Evaluator) eval(node Node) (*Result, error) {
 			return nil, err
 		}
 		trace := fmt.Sprintf("%s(%s) -> %s", n.Name, strings.Join(argTraces, ", "), formatValue(result))
-		return &Result{Value: result, Trace: trace}, nil
+		return &EvaluationResult{Value: result, Trace: trace}, nil
 	}
+
+	return nil, fmt.Errorf("unknown node type: %T", node)
 }
 
 func applyBinaryOp(op string, left, right any) any {
@@ -149,7 +151,7 @@ func callFunction(name string, args []any) (any, error) {
 		if len(args) < 1 {
 			return nil, fmt.Errorf("format requires at least 1 argument")
 		}
-		return formatString(toString(args[0], args[1:])), nil
+		return formatString(toString(args[0]), args[1:]), nil
 
 	case "join":
 		if len(args) < 1 || len(args) > 2 {
