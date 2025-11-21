@@ -1,73 +1,90 @@
 package cmds
 
 import (
-	"errors"
+	"fmt"
 	"os"
 
-	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 
-	"github.com/telton/rehearse/parser"
+	"github.com/telton/rehearse/workflow"
 )
 
 var (
-	event string
+	eventName    string
+	ref          string
+	secretsFlags []string
 
 	dryrun = &cobra.Command{
-		Use:     "dryrun [workflow file]",
+		Use:     "dryrun [workflow-file]",
 		Aliases: []string{"dr"},
-		Short:   "Run a workflow in dryrun mode",
-		Long:    ``,
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			var comps []string
+		Short:   "Analyze a workflow without running it",
+		Long: `Dry-run analyzes a GitHub Actions workflow file and shows
+what would run based on the current git state and simulated event.
 
-			return comps, cobra.ShellCompDirectiveDefault
-		},
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) < 1 {
-				cobra.CheckErr(errors.New("dryrun needs a workflow file"))
-			}
-
-			f, err := os.Open(args[0])
-			cobra.CheckErr(err)
-			defer f.Close()
-
-			wf, err := parser.NewWorkflow(f)
-			cobra.CheckErr(err)
-
-			log.Infof("Starting workflow: %s", wf.Name)
-
-			if event == "pull_request" && wf.On.PullRequest != nil {
-				log.Infof("Pull request event triggered")
-				if len(wf.On.PullRequest.Paths) > 0 {
-					log.Info("Paths:")
-				}
-				for _, p := range wf.On.PullRequest.Paths {
-					log.Printf("\t %s", p)
-				}
-			}
-			if event == "push" && wf.On.Push != nil {
-				log.Infof("Push event triggered")
-				if len(wf.On.Push.Branches) > 0 {
-					log.Info("Branches:")
-				}
-				for _, b := range wf.On.Push.Branches {
-					log.Printf("\t %s", b)
-				}
-				if len(wf.On.Push.Paths) > 0 {
-					log.Info("Paths:")
-				}
-				for _, p := range wf.On.Push.Paths {
-					log.Printf("\t %s", p)
-				}
-			}
-			// TODO: add workflow_dispatch
-
-			log.Info("Workflow run complete")
-		},
+It evaluates all conditions and shows which jobs and steps would
+execute, helping you debug your workflows locally.`,
+		Args: cobra.MaximumNArgs(1),
+		RunE: runDryrun,
 	}
 )
 
 func init() {
-	dryrun.PersistentFlags().StringVar(&event, "event", "push", "The GitHub event to simulate")
+	dryrun.Flags().StringVarP(&eventName, "event", "e", "push", "Event type to simulate (push, pull_request, etc.)")
+	dryrun.Flags().StringVarP(&ref, "ref", "r", "", "Git ref to use (defaults to current branch)")
+	dryrun.Flags().StringSliceVarP(&secretsFlags, "secret", "s", nil, "Secrets in KEY=VALUE format")
+}
+
+func runDryrun(cmd *cobra.Command, args []string) error {
+	// Find workflow file
+	var workflowPath string
+	if len(args) > 0 {
+		workflowPath = args[0]
+	} else {
+		// Find first workflow in .github/workflows
+		workflows, err := workflow.FindWorkflows(".")
+		if err != nil {
+			return fmt.Errorf("finding workflows: %w", err)
+		}
+		if len(workflows) == 0 {
+			return fmt.Errorf("no workflow files found in .github/workflows")
+		}
+		workflowPath = workflows[0]
+		fmt.Fprintf(os.Stderr, "Using workflow: %s\n\n", workflowPath)
+	}
+
+	// Parse workflow
+	wf, err := workflow.Parse(workflowPath)
+	if err != nil {
+		return fmt.Errorf("parsing workflow: %w", err)
+	}
+
+	// Parse secrets from flags
+	secrets := make(map[string]string)
+	for _, s := range secretsFlags {
+		for i := 0; i < len(s); i++ {
+			if s[i] == '=' {
+				secrets[s[:i]] = s[i+1:]
+				break
+			}
+		}
+	}
+
+	// Build context
+	ctx, err := workflow.NewContext(workflow.Options{
+		EventName: eventName,
+		Ref:       ref,
+		Secrets:   secrets,
+	})
+	if err != nil {
+		return fmt.Errorf("building context: %w", err)
+	}
+
+	// Analyze
+	a := workflow.NewAnalyzer(wf, ctx)
+	result := a.Analyze()
+
+	// Render output
+	workflow.Render(result)
+
+	return nil
 }
