@@ -7,13 +7,13 @@ type Workflow struct {
 	Name string            `yaml:"name"`
 	On   any               `yaml:"on"` // Can be []string or map
 	Env  map[string]string `yaml:"env"`
-	Jobs map[string]Job    `yaml:"job"`
+	Jobs map[string]Job    `yaml:"jobs"`
 }
 
 // Job represents a single job in a workflow.
 type Job struct {
 	Name      string            `yaml:"name"`
-	RusOn     string            `yaml:"runs-on"`
+	RunsOn    RunsOn            `yaml:"runs-on"`
 	Needs     Needs             `yaml:"needs"`
 	If        string            `yaml:"if"`
 	Env       map[string]string `yaml:"env"`
