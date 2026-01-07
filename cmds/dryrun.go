@@ -22,7 +22,7 @@ It evaluates all conditions and shows which jobs and steps would
 execute, helping you debug your workflows locally.`,
 		Arguments: []cli.Argument{
 			&cli.StringArg{
-				Name: "workflow-file",
+				Name: "<workflow-file>",
 			},
 		},
 		Flags: []cli.Flag{
