@@ -1,17 +1,17 @@
 package cmds
 
-import "github.com/spf13/cobra"
+import (
+	"context"
 
-var rootCmd = &cobra.Command{
-	Use:   "rehearse",
-	Short: "Practice before the real thing",
-	Long:  `Rehearse is a CLI to debug and step through your GitHub Action workflows.`,
+	"github.com/urfave/cli/v3"
+)
+
+var rootCmd = &cli.Command{
+	Name:     "rehearse",
+	Usage:    "practice before the real thing",
+	Commands: []*cli.Command{dryRunCmd},
 }
 
-func Execute() error {
-	return rootCmd.Execute()
-}
-
-func init() {
-	rootCmd.AddCommand(dryrun)
+func Execute(ctx context.Context, args []string) error {
+	return rootCmd.Run(ctx, args)
 }
