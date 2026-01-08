@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/urfave/cli/v3"
 
@@ -62,11 +63,9 @@ func runDryrun(workflowPath, eventName, ref string, secretArgs []string) error {
 
 	secrets := make(map[string]string)
 	for _, s := range secretArgs {
-		for i := 0; i < len(s); i++ {
-			if s[i] == '=' {
-				secrets[s[:i]] = s[i+1:]
-				break
-			}
+		secretParts := strings.SplitN(s, "=", 2)
+		if len(secretParts) == 2 {
+			secrets[secretParts[0]] = secretParts[1]
 		}
 	}
 
