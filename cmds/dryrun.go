@@ -22,7 +22,7 @@ It evaluates all conditions and shows which jobs and steps would
 execute, helping you debug your workflows locally.`,
 		Arguments: []cli.Argument{
 			&cli.StringArg{
-				Name: "<workflow-file>",
+				Name: "workflow-file",
 			},
 		},
 		Flags: []cli.Flag{
@@ -44,10 +44,10 @@ execute, helping you debug your workflows locally.`,
 			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
-			if c.Args().Len() < 1 {
+			workflowFile := c.StringArg("workflow-file")
+			if workflowFile == "" {
 				return errors.New("missing required argument: <workflow-file>")
 			}
-			workflowFile := c.Args().First()
 
 			return runDryrun(workflowFile, c.String("event"), c.String("ref"), c.StringSlice("secret"))
 		},
