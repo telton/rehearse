@@ -7,9 +7,12 @@ import (
 )
 
 var rootCmd = &cli.Command{
-	Name:     "rehearse",
-	Usage:    "practice before the real thing",
-	Commands: []*cli.Command{dryRunCmd},
+	Name:  "rehearse",
+	Usage: "practice before the real thing",
+	Commands: []*cli.Command{
+		dryRunCmd,
+		listCmd,
+	},
 }
 
 func Execute(ctx context.Context, args []string) error {
