@@ -2,6 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/telton/rehearse.svg)](https://pkg.go.dev/github.com/telton/rehearse)
 [![CI](https://github.com/telton/rehearse/actions/workflows/go.yaml/badge.svg)](https://github.com/telton/rehearse/actions/workflows/go.yaml)
+[![Release](https://github.com/telton/rehearse/actions/workflows/release.yaml/badge.svg)](https://github.com/telton/rehearse/actions/workflows/release.yaml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/telton/rehearse)](https://goreportcard.com/report/github.com/telton/rehearse)
 
 **Practice before the real thing** - A CLI tool for analyzing and running GitHub Actions workflows locally.
@@ -19,6 +20,28 @@ Rehearse helps you develop, debug, and test GitHub Actions workflows without com
 - **Fast feedback** - Debug workflows without CI round trips
 
 ## Installation
+
+### Download Pre-built Binaries (Recommended)
+
+Download the latest release for your platform from the [releases page](https://github.com/telton/rehearse/releases/latest):
+
+```bash
+# Linux (x86_64)
+curl -sL https://github.com/telton/rehearse/releases/latest/download/rehearse_Linux_x86_64.tar.gz | tar -xz
+
+# macOS (Intel)
+curl -sL https://github.com/telton/rehearse/releases/latest/download/rehearse_Darwin_x86_64.tar.gz | tar -xz
+
+# macOS (Apple Silicon)
+curl -sL https://github.com/telton/rehearse/releases/latest/download/rehearse_Darwin_arm64.tar.gz | tar -xz
+
+# Windows (x86_64)
+curl -sL https://github.com/telton/rehearse/releases/latest/download/rehearse_Windows_x86_64.zip -o rehearse.zip
+unzip rehearse.zip
+
+# Move to PATH (Linux/macOS)
+sudo mv rehearse /usr/local/bin/
+```
 
 ### From Source
 
