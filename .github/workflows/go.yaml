@@ -16,7 +16,8 @@ on:
       - "go.mod"
       - "go.sum"
       - "**/*.go"
-      - ".golangci.yaml"   
+      - ".golangci.yaml"
+  workflow_call:  # Make this workflow reusable
 
 permissions:
   contents: read

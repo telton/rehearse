@@ -9,12 +9,12 @@ permissions:
   contents: write
 
 jobs:
-  # Require CI jobs to pass before releasing
-  test:
+  # Run all CI checks first
+  ci:
     uses: ./.github/workflows/go.yaml
-    
+
   release:
-    needs: test
+    needs: ci
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
