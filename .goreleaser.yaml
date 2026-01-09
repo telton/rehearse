@@ -1,0 +1,114 @@
+# GoReleaser configuration for rehearse
+# See: https://goreleaser.com
+version: 2
+
+before:
+  hooks:
+    # Verify dependencies and run tests before building
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - "386"
+      - amd64
+      - arm
+      - arm64
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: darwin
+        goarch: arm
+      - goos: windows
+        goarch: arm
+    main: ./main.go
+    binary: rehearse
+
+archives:
+  - format: tar.gz
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+      - "merge conflict"
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+  groups:
+    - title: Features
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: 'Bug fixes'
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: Others
+      order: 999
+
+release:
+  github:
+    owner: telton
+    name: rehearse
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## What's Changed
+    
+    This release includes cross-platform binaries for Linux, macOS, and Windows.
+    
+    ### Installation
+    
+    Download the appropriate binary for your platform from the assets below, extract it, and add it to your PATH.
+  
+  footer: |
+    **Full Changelog**: https://github.com/telton/rehearse/compare/{{ .PreviousTag }}...{{ .Tag }}
+    
+    ---
+    
+    ### Verify Downloads
+    
+    All binaries can be verified using the provided `checksums.txt`:
+    
+    ```bash
+    # Download binary and checksums
+    curl -sL "https://github.com/telton/rehearse/releases/download/{{ .Tag }}/rehearse_Linux_x86_64.tar.gz" -o rehearse.tar.gz
+    curl -sL "https://github.com/telton/rehearse/releases/download/{{ .Tag }}/checksums.txt" -o checksums.txt
+    
+    # Verify checksum
+    sha256sum -c --ignore-missing checksums.txt
+    ```
+
+# Disable other distribution methods for now
+brews: []
+scoops: []
+nfpms: []
+publishers: []
+dockers: []
