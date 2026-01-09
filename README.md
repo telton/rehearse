@@ -10,13 +10,13 @@ Rehearse helps you develop, debug, and test GitHub Actions workflows without com
 
 ## Features
 
-- 🔍 **Dry-run analysis** - See which jobs and steps would execute without running them
-- 🐳 **Local execution** - Run workflows locally using Docker containers
-- 📊 **Condition evaluation** - Understand complex workflow conditions and job dependencies  
-- 🎯 **Event simulation** - Test different GitHub events (push, pull_request, etc.)
-- 🔐 **Secret injection** - Provide secrets for local testing
-- 📝 **Multiple output formats** - JSON and text output for integration
-- ⚡ **Fast feedback** - Debug workflows without CI round trips
+- **Dry-run analysis** - See which jobs and steps would execute without running them
+- **Local execution** - Run workflows locally using Docker containers
+- **Condition evaluation** - Understand complex workflow conditions and job dependencies  
+- **Event simulation** - Test different GitHub events (push, pull_request, etc.)
+- **Secret injection** - Provide secrets for local testing
+- **Multiple output formats** - JSON and text output for integration
+- **Fast feedback** - Debug workflows without CI round trips
 
 ## Installation
 
@@ -152,35 +152,35 @@ You can also set the log level using the `REHEARSE_LOG_LEVEL` environment variab
 Rehearse supports most GitHub Actions workflow features:
 
 ### Workflow Syntax
-- ✅ Jobs with dependencies (`needs`)
-- ✅ Conditional execution (`if` statements)  
-- ✅ Environment variables (`env`)
-- ✅ Multiple runner types (`runs-on`)
-- ✅ Workflow triggers and events
-- ✅ Job and step-level configuration
+- [OK] Jobs with dependencies (`needs`)
+- [OK] Conditional execution (`if` statements)  
+- [OK] Environment variables (`env`)
+- [OK] Multiple runner types (`runs-on`)
+- [OK] Workflow triggers and events
+- [OK] Job and step-level configuration
 
 ### Steps
-- ✅ Shell commands (`run`)
-- ✅ GitHub Actions (`uses`)
-  - ✅ Local actions (`./path/to/action`)
-  - ✅ Repository actions (`actions/checkout@v4`)
-  - ✅ Docker actions (`docker://alpine:latest`)
-- ✅ Step conditions and environment variables
-- ✅ Step outputs and job outputs
+- [OK] Shell commands (`run`)
+- [OK] GitHub Actions (`uses`)
+  - [OK] Local actions (`./path/to/action`)
+  - [OK] Repository actions (`actions/checkout@v4`)
+  - [OK] Docker actions (`docker://alpine:latest`)
+- [OK] Step conditions and environment variables
+- [OK] Step outputs and job outputs
 
 ### Actions
-- ✅ Docker-based actions
-- ✅ Node.js actions (16, 20)
-- ✅ Composite actions
-- ✅ Action inputs and outputs
-- ✅ Local action development
+- [OK] Docker-based actions
+- [OK] Node.js actions (16, 20)
+- [OK] Composite actions
+- [OK] Action inputs and outputs
+- [OK] Local action development
 
 ### Context & Expressions
-- ✅ GitHub context (`github.*`)
-- ✅ Environment variables (`env.*`)
-- ✅ Job outputs (`needs.*`)
-- ✅ Step outputs (`steps.*`)
-- ✅ Expression evaluation (`${{ }}`)
+- [OK] GitHub context (`github.*`)
+- [OK] Environment variables (`env.*`)
+- [OK] Job outputs (`needs.*`)
+- [OK] Step outputs (`steps.*`)
+- [OK] Expression evaluation (`${{ }}`)
 
 ## Examples
 
@@ -315,9 +315,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-- 🐛 **Issues**: [GitHub Issues](https://github.com/telton/rehearse/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/telton/rehearse/discussions)
-- 📖 **Documentation**: [pkg.go.dev](https://pkg.go.dev/github.com/telton/rehearse)
+- **Issues**: [GitHub Issues](https://github.com/telton/rehearse/issues)
+- **Feature Requests**: [GitHub Discussions](https://github.com/telton/rehearse/discussions)
+- **Documentation**: [pkg.go.dev](https://pkg.go.dev/github.com/telton/rehearse)
 
 ## Acknowledgments
 
