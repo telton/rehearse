@@ -170,7 +170,7 @@ func TestWorkflowAnalysis(t *testing.T) {
 						}
 					}
 					// Either some job runs, or all jobs have clear skip reasons
-					assert.True(t, foundRunningJob || skippedCount == len(result.Jobs), 
+					assert.True(t, foundRunningJob || skippedCount == len(result.Jobs),
 						"Jobs should either run or have skip reasons for %s", tc.Path)
 				}
 			}
@@ -315,7 +315,7 @@ func TestWorkflowCategories(t *testing.T) {
 			if category == "errors" {
 				t.Logf("Error category: %d/%d workflows parsed (some should fail)", successCount, len(cases))
 			} else {
-				assert.Greater(t, successCount, 0,
+				assert.Positive(t, successCount,
 					"Category %s should have some working workflows", category)
 				t.Logf("Category '%s': %d/%d workflows parsed successfully",
 					category, successCount, len(cases))
@@ -399,13 +399,13 @@ func TestWorkflowExpressions(t *testing.T) {
 // TestSpecificWorkflows tests specific workflows with known expected behaviors
 func TestSpecificWorkflows(t *testing.T) {
 	tests := []struct {
-		name           string
-		workflowPath   string
-		event          string
-		ref            string
-		expectedJobs   int
-		expectedSteps  map[string]int // job name -> expected step count
-		shouldAllRun   bool
+		name          string
+		workflowPath  string
+		event         string
+		ref           string
+		expectedJobs  int
+		expectedSteps map[string]int // job name -> expected step count
+		shouldAllRun  bool
 	}{
 		{
 			name:         "basic hello workflow",
@@ -457,7 +457,7 @@ func TestSpecificWorkflows(t *testing.T) {
 			result := analyzer.Analyze()
 
 			require.NotNil(t, result, "Analysis result should not be nil")
-			assert.Equal(t, tt.expectedJobs, len(result.Jobs),
+			assert.Len(t, result.Jobs, tt.expectedJobs,
 				"Expected %d jobs for %s with event %s", tt.expectedJobs, tt.workflowPath, tt.event)
 
 			if tt.shouldAllRun {
@@ -473,7 +473,7 @@ func TestSpecificWorkflows(t *testing.T) {
 					for _, job := range result.Jobs {
 						if job.Name == jobName {
 							found = true
-							assert.Equal(t, expectedStepCount, len(job.Steps),
+							assert.Len(t, job.Steps, expectedStepCount,
 								"Job %s should have %d steps", jobName, expectedStepCount)
 							break
 						}
@@ -518,7 +518,7 @@ func TestWorkflowFileDiscovery(t *testing.T) {
 			errorCount++
 		}
 	}
-	assert.Greater(t, errorCount, 0, "Should have at least one error test case")
+	assert.Positive(t, errorCount, "Should have at least one error test case")
 
 	t.Logf("Discovered %d workflow files (%d should fail)", len(testCases), errorCount)
 }
