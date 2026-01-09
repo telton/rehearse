@@ -1,0 +1,45 @@
+name: Environment and Outputs
+on: push
+
+env:
+  GLOBAL_VAR: global-value
+  APP_NAME: MyApp
+
+jobs:
+  environment-demo:
+    runs-on: ubuntu-latest
+    env:
+      JOB_VAR: job-level-value
+    outputs:
+      result: ${{ steps.output-step.outputs.result }}
+      
+    steps:
+    - name: Show Environment Variables
+      env:
+        STEP_VAR: step-level-value
+      run: |
+        echo "Global: $GLOBAL_VAR"
+        echo "Job: $JOB_VAR" 
+        echo "Step: $STEP_VAR"
+        
+    - name: Set Environment Variable
+      run: |
+        echo "DYNAMIC_VAR=dynamic-value" >> $GITHUB_ENV
+        
+    - name: Use Dynamic Environment
+      run: |
+        echo "Dynamic: $DYNAMIC_VAR"
+      
+    - id: output-step
+      name: Set Output
+      run: |
+        result="success"
+        echo "result=$result" >> $GITHUB_OUTPUT
+        
+  use-outputs:
+    runs-on: ubuntu-latest
+    needs: environment-demo
+    steps:
+    - name: Use Job Output
+      run: |
+        echo "Previous job result: ${{ needs.environment-demo.outputs.result }}"

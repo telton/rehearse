@@ -1,0 +1,53 @@
+name: Styled Output Demo
+
+on: push
+
+env:
+  PROJECT_NAME: "rehearse"
+
+jobs:
+  showcase:
+    runs-on: ubuntu-latest
+    outputs:
+      final-status: ${{ steps.summary.outputs.status }}
+      version: ${{ steps.version.outputs.number }}
+    
+    steps:
+    - name: Environment Setup
+      run: |
+        echo "🔧 Setting up build environment"
+        echo "BUILD_ENV=production" >> $GITHUB_ENV
+        echo "TIMESTAMP=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_ENV
+        
+    - name: Version Generation
+      id: version
+      run: |
+        echo "📦 Generating version for $PROJECT_NAME"
+        VERSION="v2.0.0-$TIMESTAMP"
+        echo "Generated version: $VERSION"
+        echo "number=$VERSION" >> $GITHUB_OUTPUT
+        
+    - name: Build Application
+      run: |
+        echo "🔨 Building $PROJECT_NAME version ${{ steps.version.outputs.number }}"
+        echo "Environment: $BUILD_ENV"
+        echo "Timestamp: $TIMESTAMP"
+        
+    - name: Run Tests
+      id: tests
+      run: |
+        echo "🧪 Running test suite for ${{ steps.version.outputs.number }}"
+        echo "coverage=99.2" >> $GITHUB_OUTPUT
+        echo "tests_passed=247" >> $GITHUB_OUTPUT
+        
+    - name: Final Summary
+      id: summary
+      run: |
+        echo "✨ Build Summary for $PROJECT_NAME"
+        echo "=================================="
+        echo "Version: ${{ steps.version.outputs.number }}"
+        echo "Environment: $BUILD_ENV"
+        echo "Tests Passed: ${{ steps.tests.outputs.tests_passed }}"
+        echo "Coverage: ${{ steps.tests.outputs.coverage }}%"
+        echo "Timestamp: $TIMESTAMP"
+        echo "status=success" >> $GITHUB_OUTPUT
