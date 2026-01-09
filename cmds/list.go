@@ -13,6 +13,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/urfave/cli/v3"
 
+	"github.com/telton/rehearse/internal/logger"
 	"github.com/telton/rehearse/workflow"
 )
 
@@ -64,6 +65,8 @@ var (
 			outFmt := c.String("format")
 			prettyPrint := c.Bool("pretty-print")
 
+			logger.Debug("Listing workflows", "dir", dir, "format", outFmt, "pretty_print", prettyPrint)
+
 			type workflowFile struct {
 				Filename     string `json:"filename"`
 				Filepath     string `json:"filepath"`
@@ -83,7 +86,7 @@ var (
 
 					wrkFlw, err := workflow.Parse(fullPath)
 					if err != nil {
-						fmt.Fprintf(os.Stderr, "Error parsing workflow: %v", err)
+						logger.Warn("Failed to parse workflow file", "file", fullPath, "error", err)
 						continue
 					}
 
