@@ -12,8 +12,6 @@ jobs:
   # Run all CI checks first
   ci:
     uses: ./.github/workflows/go.yaml
-    permissions:
-      contents: read
 
   release:
     needs: ci
