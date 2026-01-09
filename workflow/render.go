@@ -30,12 +30,10 @@ var (
 )
 
 func Render(result *AnalysisResult) {
-	// Header.
 	fmt.Println(headerStyle.Render("Workflow: " + result.WorkflowName))
 	fmt.Println(labelStyle.Render("Trigger: ") + valueStyle.Render(result.Trigger))
 	fmt.Println()
 
-	// Context summary.
 	fmt.Println(headerStyle.Render("Context:"))
 	fmt.Printf("  %s = %s\n", labelStyle.Render("github.ref       "), valueStyle.Render(result.Context.GitHub.Ref))
 	fmt.Printf("  %s = %s\n", labelStyle.Render("github.event_name"), valueStyle.Render(result.Context.GitHub.EventName))
@@ -44,7 +42,6 @@ func Render(result *AnalysisResult) {
 	fmt.Printf("  %s = %s\n", labelStyle.Render("github.repository"), valueStyle.Render(result.Context.GitHub.Repository))
 	fmt.Println()
 
-	// Jobs.
 	willRun := 0
 	skipped := 0
 
@@ -59,7 +56,6 @@ func Render(result *AnalysisResult) {
 		}
 	}
 
-	// Summary.
 	summary := fmt.Sprintf("Summary: %d job(s) will run", willRun)
 	if skipped > 0 {
 		summary += fmt.Sprintf(", %d skipped", skipped)
@@ -70,7 +66,6 @@ func Render(result *AnalysisResult) {
 func renderJob(job JobResult) string {
 	var b strings.Builder
 
-	// Header with status icon.
 	icon := passStyle.Render("✓")
 	nameStyle := boldStyle
 	if !job.WouldRun {
@@ -84,15 +79,12 @@ func renderJob(job JobResult) string {
 	}
 	b.WriteString(header + "\n")
 
-	// runs-on.
 	b.WriteString(labelStyle.Render("runs-on: ") + job.RunsOn + "\n")
 
-	// needs.
 	if len(job.Needs) > 0 {
 		b.WriteString(labelStyle.Render("needs: ") + "[" + strings.Join(job.Needs, ", ") + "]\n")
 	}
 
-	// condition.
 	if job.Condition != nil {
 		resultStr := passStyle.Render("TRUE")
 		if !job.Condition.Value {
@@ -101,7 +93,6 @@ func renderJob(job JobResult) string {
 		b.WriteString(fmt.Sprintf("%s %s -> %s\n", labelStyle.Render("if:"), exprStyle.Render(job.Condition.Expression), resultStr))
 	}
 
-	// Skip reason.
 	if len(job.Steps) > 0 {
 		b.WriteString("\n")
 		for _, step := range job.Steps {
@@ -109,7 +100,6 @@ func renderJob(job JobResult) string {
 		}
 	}
 
-	// Trim triling newline for box.
 	content := strings.TrimSuffix(b.String(), "\n")
 
 	return jobBoxStyle.Render(content)
@@ -132,7 +122,6 @@ func renderStep(step StepResult, jobWillRun bool) string {
 
 	line := fmt.Sprintf("  %s %s", icon, nameStyle.Render(step.Name))
 
-	// Show condition, if present,
 	if step.Condition != nil {
 		resultStr := passStyle.Render("TRUE")
 		if !step.Condition.Value {

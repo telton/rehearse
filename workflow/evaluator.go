@@ -120,13 +120,6 @@ func applyBinaryOp(op string, left, right any) any {
 	return nil
 }
 
-func applyUnaryOp(op string, operand any) any {
-	if op == "!" {
-		return !toBool(operand)
-	}
-	return nil
-}
-
 func callFunction(name string, args []any) (any, error) {
 	switch name {
 	case "contains":
@@ -168,7 +161,7 @@ func callFunction(name string, args []any) (any, error) {
 	case "always":
 		return true, nil
 	case "success":
-		return true, nil // Assume success for dryruns.
+		return true, nil
 	case "failure":
 		return false, nil
 	case "cancelled":

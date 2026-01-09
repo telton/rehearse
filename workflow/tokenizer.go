@@ -342,7 +342,7 @@ func (p *parser) parsePrimary() (Node, error) {
 	case TokenNumber:
 		p.advance()
 		var num float64
-		fmt.Sscanf(t.Value, "%f", &num)
+		_, _ = fmt.Sscanf(t.Value, "%f", &num)
 		return &LiteralNode{Value: num}, nil
 
 	case TokenBool:

@@ -59,7 +59,6 @@ func (a *Analyzer) Analyze() *AnalysisResult {
 		Context:      a.ctx,
 	}
 
-	// Get job execution order.
 	order := a.topologicalSort()
 
 	for _, jobName := range order {
@@ -67,7 +66,6 @@ func (a *Analyzer) Analyze() *AnalysisResult {
 		jobResult := a.analyzeJob(jobName, job)
 		result.Jobs = append(result.Jobs, jobResult)
 
-		// Update context for dependent jobs.
 		status := "success"
 		if !jobResult.WouldRun {
 			status = "skipped"
@@ -85,7 +83,6 @@ func (a *Analyzer) analyzeJob(name string, job Job) JobResult {
 		Needs:  job.Needs.Jobs,
 	}
 
-	// Check if dependencies are satisfied.
 	needsSatisfied := true
 	for _, dep := range job.Needs.Jobs {
 		if jobCtx, ok := a.ctx.Jobs[dep]; ok {
@@ -97,7 +94,6 @@ func (a *Analyzer) analyzeJob(name string, job Job) JobResult {
 		}
 	}
 
-	// Evaludate job condition.
 	if job.If != "" {
 		condResult := a.evaluateCondition(job.If)
 		result.Condition = condResult
@@ -115,7 +111,6 @@ func (a *Analyzer) analyzeJob(name string, job Job) JobResult {
 		result.SkipReason = "dependency not satisfied"
 	}
 
-	// Analyze steps.
 	for _, step := range job.Steps {
 		stepResult := a.analyzeStep(step)
 		result.Steps = append(result.Steps, stepResult)
@@ -131,7 +126,6 @@ func (a *Analyzer) analyzeStep(step Step) StepResult {
 		Action:  step.Uses,
 	}
 
-	// Determine step name if not set.
 	if result.Name == "" {
 		if step.Run != "" {
 			result.Name = truncate(step.Run, 40)
@@ -140,14 +134,12 @@ func (a *Analyzer) analyzeStep(step Step) StepResult {
 		}
 	}
 
-	// Determine type.
 	if step.Uses != "" {
 		result.Type = "action"
 	} else {
 		result.Type = "run"
 	}
 
-	// Evaluate condition.
 	if step.If != "" {
 		condResult := a.evaluateCondition(step.If)
 		result.Condition = condResult
@@ -208,7 +200,7 @@ func (a *Analyzer) topologicalSort() []string {
 }
 
 func truncate(s string, max int) string {
-	// Get first line.
+	// Get the first line.
 	for i, c := range s {
 		if c == '\n' {
 			s = s[:i]
