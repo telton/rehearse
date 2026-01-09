@@ -152,35 +152,35 @@ You can also set the log level using the `REHEARSE_LOG_LEVEL` environment variab
 Rehearse supports most GitHub Actions workflow features:
 
 ### Workflow Syntax
-- [OK] Jobs with dependencies (`needs`)
-- [OK] Conditional execution (`if` statements)  
-- [OK] Environment variables (`env`)
-- [OK] Multiple runner types (`runs-on`)
-- [OK] Workflow triggers and events
-- [OK] Job and step-level configuration
+- [x] Jobs with dependencies (`needs`)
+- [x] Conditional execution (`if` statements)  
+- [x] Environment variables (`env`)
+- [x] Multiple runner types (`runs-on`)
+- [x] Workflow triggers and events
+- [x] Job and step-level configuration
 
 ### Steps
-- [OK] Shell commands (`run`)
-- [OK] GitHub Actions (`uses`)
-  - [OK] Local actions (`./path/to/action`)
-  - [OK] Repository actions (`actions/checkout@v4`)
-  - [OK] Docker actions (`docker://alpine:latest`)
-- [OK] Step conditions and environment variables
-- [OK] Step outputs and job outputs
+- [x] Shell commands (`run`)
+- [x] GitHub Actions (`uses`)
+  - [x] Local actions (`./path/to/action`)
+  - [x] Repository actions (`actions/checkout@v4`)
+  - [x] Docker actions (`docker://alpine:latest`)
+- [x] Step conditions and environment variables
+- [x] Step outputs and job outputs
 
 ### Actions
-- [OK] Docker-based actions
-- [OK] Node.js actions (16, 20)
-- [OK] Composite actions
-- [OK] Action inputs and outputs
-- [OK] Local action development
+- [x] Docker-based actions
+- [x] Node.js actions (16, 20)
+- [x] Composite actions
+- [x] Action inputs and outputs
+- [x] Local action development
 
 ### Context & Expressions
-- [OK] GitHub context (`github.*`)
-- [OK] Environment variables (`env.*`)
-- [OK] Job outputs (`needs.*`)
-- [OK] Step outputs (`steps.*`)
-- [OK] Expression evaluation (`${{ }}`)
+- [x] GitHub context (`github.*`)
+- [x] Environment variables (`env.*`)
+- [x] Job outputs (`needs.*`)
+- [x] Step outputs (`steps.*`)
+- [x] Expression evaluation (`${{ }}`)
 
 ## Examples
 
