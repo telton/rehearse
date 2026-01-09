@@ -17,9 +17,9 @@ func TestHeaderComponent(t *testing.T) {
 			contains: []string{"Test Header"},
 		},
 		{
-			name:     "header with emoji",
-			header:   NewHeader("Test Header").WithEmoji("🎭"),
-			contains: []string{"🎭", "Test Header"},
+			name:     "header with symbol",
+			header:   NewHeader("Test Header").WithEmoji("*"),
+			contains: []string{"*", "Test Header"},
 		},
 	}
 
@@ -71,10 +71,10 @@ func TestStatusComponent(t *testing.T) {
 }
 
 func TestStatusComponentWithIcon(t *testing.T) {
-	status := NewStatus("success", "Test").WithIcon("✓")
+	status := NewStatus("success", "Test").WithIcon("[OK]")
 	result := status.Render()
 
-	if !strings.Contains(result, "✓") {
+	if !strings.Contains(result, "[OK]") {
 		t.Errorf("Expected status to contain icon, got: %s", result)
 	}
 	if !strings.Contains(result, "Test") {

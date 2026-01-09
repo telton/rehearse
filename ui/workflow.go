@@ -17,7 +17,7 @@ func NewWorkflowRenderer() *WorkflowRenderer {
 
 // RenderWorkflowHeader renders a workflow title with metadata
 func (r *WorkflowRenderer) RenderWorkflowHeader(name, trigger string) string {
-	header := NewHeader(fmt.Sprintf("Workflow: %s", name)).WithEmoji("🎭").WithMargin()
+	header := NewHeader(fmt.Sprintf("Workflow: %s", name)).WithEmoji("*").WithMargin()
 	triggerInfo := NewLabelValue("Trigger:", trigger).WithIndent(2)
 
 	return header.Render() + "\n" + triggerInfo.Render()
@@ -45,7 +45,7 @@ func (r *WorkflowRenderer) RenderJobHeader(jobID, name string) string {
 		title = fmt.Sprintf("%s (%s)", jobID, name)
 	}
 
-	return WithColor(Bold, theme.Data).Render("🔧 Job: " + title)
+	return WithColor(Bold, theme.Data).Render("[JOB] " + title)
 }
 
 // RenderStep renders a workflow step with status
@@ -53,13 +53,13 @@ func (r *WorkflowRenderer) RenderStep(name, status string, indent int) string {
 	var icon string
 	switch status {
 	case "success", "completed":
-		icon = "✓"
+		icon = "[OK]"
 	case "error", "failed":
-		icon = "✗"
+		icon = "[FAIL]"
 	case "skipped":
-		icon = "⊝"
+		icon = "[SKIP]"
 	case "running":
-		icon = "⟳"
+		icon = "[RUN]"
 	default:
 		icon = "•"
 	}
@@ -95,7 +95,7 @@ func (r *WorkflowRenderer) RenderOutput(text string, indent int, isError bool) s
 
 // RenderSummary renders a workflow execution summary
 func (r *WorkflowRenderer) RenderSummary(total, success, failed, skipped int) string {
-	header := NewHeader("Summary").WithEmoji("📊").WithMargin()
+	header := NewHeader("Summary").WithEmoji("[STATS]").WithMargin()
 
 	var summaryLines []string
 	summaryLines = append(summaryLines, header.Render())
@@ -106,15 +106,15 @@ func (r *WorkflowRenderer) RenderSummary(total, success, failed, skipped int) st
 	}
 	if success > 0 {
 		summaryLines = append(summaryLines,
-			WithMargin(Success, 2).Render(fmt.Sprintf("✓ %d successful", success)))
+			WithMargin(Success, 2).Render(fmt.Sprintf("[OK] %d successful", success)))
 	}
 	if failed > 0 {
 		summaryLines = append(summaryLines,
-			WithMargin(Error, 2).Render(fmt.Sprintf("✗ %d failed", failed)))
+			WithMargin(Error, 2).Render(fmt.Sprintf("[FAIL] %d failed", failed)))
 	}
 	if skipped > 0 {
 		summaryLines = append(summaryLines,
-			WithMargin(Warning, 2).Render(fmt.Sprintf("⊝ %d skipped", skipped)))
+			WithMargin(Warning, 2).Render(fmt.Sprintf("[SKIP] %d skipped", skipped)))
 	}
 
 	return strings.Join(summaryLines, "\n")
@@ -122,7 +122,7 @@ func (r *WorkflowRenderer) RenderSummary(total, success, failed, skipped int) st
 
 // RenderDockerOperation renders Docker-related operations
 func (r *WorkflowRenderer) RenderDockerOperation(operation, image string) string {
-	return WithColor(Bold, theme.Info).Render("🐳 " + operation + ": " + image)
+	return WithColor(Bold, theme.Info).Render("[DOCKER] " + operation + ": " + image)
 }
 
 // RenderEnvironmentVar renders environment variable assignments

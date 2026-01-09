@@ -66,10 +66,10 @@ func Render(result *AnalysisResult) {
 func renderJob(job JobResult) string {
 	var b strings.Builder
 
-	icon := passStyle.Render("✓")
+	icon := passStyle.Render("[OK]")
 	nameStyle := boldStyle
 	if !job.WouldRun {
-		icon = skipStyle.Render("⊘")
+		icon = skipStyle.Render("[SKIP]")
 		nameStyle = skipStyle.Bold(true)
 	}
 
@@ -110,13 +110,13 @@ func renderStep(step StepResult, jobWillRun bool) string {
 	var nameStyle lipgloss.Style
 
 	if !jobWillRun {
-		icon = skipStyle.Render("·")
+		icon = skipStyle.Render(".")
 		nameStyle = skipStyle
 	} else if step.WouldRun {
-		icon = passStyle.Render("✓")
+		icon = passStyle.Render("[OK]")
 		nameStyle = lipgloss.NewStyle()
 	} else {
-		icon = skipStyle.Render("⊘")
+		icon = skipStyle.Render("[SKIP]")
 		nameStyle = skipStyle
 	}
 
