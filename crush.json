@@ -1,0 +1,12 @@
+{
+  "$schema": "https://charm.land/crush.json",
+  "mcp": {},
+  "lsp": {
+    "go": {
+      "command": "gopls"
+    },
+    "nix": {
+      "command": "nil"
+    }
+  }
+}
