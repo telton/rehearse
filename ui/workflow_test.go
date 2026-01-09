@@ -17,8 +17,8 @@ func TestWorkflowRenderer(t *testing.T) {
 		if !strings.Contains(result, "push") {
 			t.Errorf("Expected header to contain trigger, got: %s", result)
 		}
-		if !strings.Contains(result, "🎭") {
-			t.Errorf("Expected header to contain emoji, got: %s", result)
+		if !strings.Contains(result, "*") {
+			t.Errorf("Expected header to contain symbol, got: %s", result)
 		}
 	})
 
@@ -52,8 +52,8 @@ func TestWorkflowRenderer(t *testing.T) {
 		if !strings.Contains(result, "Build Application") {
 			t.Errorf("Expected job header to contain job name, got: %s", result)
 		}
-		if !strings.Contains(result, "🔧") {
-			t.Errorf("Expected job header to contain emoji, got: %s", result)
+		if !strings.Contains(result, "[JOB]") {
+			t.Errorf("Expected job header to contain symbol, got: %s", result)
 		}
 	})
 
@@ -62,10 +62,10 @@ func TestWorkflowRenderer(t *testing.T) {
 			status       string
 			expectedIcon string
 		}{
-			{"success", "✓"},
-			{"error", "✗"},
-			{"skipped", "⊝"},
-			{"running", "⟳"},
+			{"success", "[OK]"},
+			{"error", "[FAIL]"},
+			{"skipped", "[SKIP]"},
+			{"running", "[RUN]"},
 		}
 
 		for _, tt := range tests {
@@ -87,8 +87,8 @@ func TestWorkflowRenderer(t *testing.T) {
 		if !strings.Contains(result, "Summary") {
 			t.Errorf("Expected summary to contain header, got: %s", result)
 		}
-		if !strings.Contains(result, "📊") {
-			t.Errorf("Expected summary to contain emoji, got: %s", result)
+		if !strings.Contains(result, "[STATS]") {
+			t.Errorf("Expected summary to contain symbol, got: %s", result)
 		}
 		if !strings.Contains(result, "5") {
 			t.Errorf("Expected summary to contain total count, got: %s", result)
@@ -104,8 +104,8 @@ func TestWorkflowRenderer(t *testing.T) {
 		if !strings.Contains(result, "ubuntu:latest") {
 			t.Errorf("Expected docker operation to contain image, got: %s", result)
 		}
-		if !strings.Contains(result, "🐳") {
-			t.Errorf("Expected docker operation to contain emoji, got: %s", result)
+		if !strings.Contains(result, "[DOCKER]") {
+			t.Errorf("Expected docker operation to contain symbol, got: %s", result)
 		}
 	})
 

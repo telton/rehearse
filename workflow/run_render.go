@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/telton/rehearse/internal/logger"
 	"github.com/telton/rehearse/ui"
 )
 
@@ -17,17 +18,19 @@ func NewRunRenderer() *RunRenderer {
 
 // RenderWorkflowStart renders the initial workflow information
 func (r *RunRenderer) RenderWorkflowStart(workflowName, workingDir, event, ref string) {
-	title := ui.NewHeader(workflowName).WithEmoji("🎭").WithMargin()
+	logger.Debug("Rendering workflow start", "workflow", workflowName, "working_dir", workingDir, "event", event, "ref", ref)
+
+	title := ui.NewHeader(workflowName).WithEmoji("*").WithMargin()
 	fmt.Println(title.Render())
 
-	workDir := ui.NewLabelValue("📁 Working directory:", workingDir)
+	workDir := ui.NewLabelValue("[DIR] Working directory:", workingDir)
 	fmt.Println(workDir.Render())
 
-	eventInfo := ui.NewLabelValue("🔀 Event:", event)
+	eventInfo := ui.NewLabelValue("[EVENT] Event:", event)
 	fmt.Println(eventInfo.Render())
 
 	if ref != "" {
-		refInfo := ui.NewLabelValue("🌿 Ref:", ref)
+		refInfo := ui.NewLabelValue("[REF] Ref:", ref)
 		fmt.Println(refInfo.Render())
 	}
 	fmt.Println()
@@ -35,22 +38,22 @@ func (r *RunRenderer) RenderWorkflowStart(workflowName, workingDir, event, ref s
 
 // RenderDockerCheck renders Docker availability check
 func (r *RunRenderer) RenderDockerCheck() {
-	status := ui.NewStatus("info", "Checking Docker availability...").WithIcon("🔍")
+	status := ui.NewStatus("info", "Checking Docker availability...").WithIcon("[CHECK]")
 	fmt.Println(status.Render())
 }
 
 // RenderDockerSuccess renders successful Docker connection
 func (r *RunRenderer) RenderDockerSuccess() {
-	status := ui.NewStatus("success", "Docker is available").WithIcon("✅")
+	status := ui.NewStatus("success", "Docker is available").WithIcon("[OK]")
 	fmt.Println(status.Render())
 }
 
 // RenderDockerError renders Docker connection error
 func (r *RunRenderer) RenderDockerError(err error) {
-	warning := ui.NewStatus("warning", "Warning: "+err.Error()).WithIcon("⚠️")
+	warning := ui.NewStatus("warning", "Warning: "+err.Error()).WithIcon("[WARN]")
 	fmt.Println(warning.Render())
 
-	suggestion := ui.NewStatus("warning", "To run workflows locally, please install and start Docker").WithIcon("💡")
+	suggestion := ui.NewStatus("warning", "To run workflows locally, please install and start Docker").WithIcon("[TIP]")
 	fmt.Println(suggestion.Render())
 
 	link := ui.NewStatus("info", "Visit: https://docs.docker.com/get-docker/").WithIcon("   ")
@@ -59,27 +62,29 @@ func (r *RunRenderer) RenderDockerError(err error) {
 
 // RenderDockerInit renders Docker client initialization
 func (r *RunRenderer) RenderDockerInit() {
-	status := ui.NewStatus("info", "Initializing Docker client...").WithIcon("🐳")
+	status := ui.NewStatus("info", "Initializing Docker client...").WithIcon("[DOCKER]")
 	fmt.Println(status.Render())
 }
 
 // RenderExecutionStart renders the start of workflow execution
 func (r *RunRenderer) RenderExecutionStart() {
-	status := ui.NewStatus("info", "Starting workflow execution...").WithIcon("▶️")
+	status := ui.NewStatus("info", "Starting workflow execution...").WithIcon("[START]")
 	fmt.Println(status.Render())
 }
 
 // RenderJobStart renders the start of a job
 func (r *RunRenderer) RenderJobStart(jobName string) {
+	logger.Debug("Rendering job start", "job", jobName)
+
 	renderer := ui.NewWorkflowRenderer()
 	header := renderer.RenderJobHeader("", jobName)
-	fmt.Println("🏃 " + header)
+	fmt.Println("[RUN] " + header)
 }
 
 // RenderJobSuccess renders successful job completion
 func (r *RunRenderer) RenderJobSuccess(jobName string, duration int64) {
 	message := fmt.Sprintf("Job %s completed successfully in %ds", jobName, duration)
-	status := ui.NewStatus("success", message).WithIcon("✅")
+	status := ui.NewStatus("success", message).WithIcon("[OK]")
 	fmt.Println(status.Render())
 	fmt.Println()
 }
@@ -87,22 +92,24 @@ func (r *RunRenderer) RenderJobSuccess(jobName string, duration int64) {
 // RenderJobError renders job failure
 func (r *RunRenderer) RenderJobError(jobName string, duration int64) {
 	message := fmt.Sprintf("Job %s failed after %ds", jobName, duration)
-	status := ui.NewStatus("error", message).WithIcon("❌")
+	status := ui.NewStatus("error", message).WithIcon("[FAIL]")
 	fmt.Println(status.Render())
 	fmt.Println()
 }
 
 // RenderStepStart renders the start of a step
 func (r *RunRenderer) RenderStepStart(stepNum, totalSteps int, stepName string) {
+	logger.Debug("Rendering step start", "step_num", stepNum, "total_steps", totalSteps, "step_name", stepName)
+
 	message := fmt.Sprintf("Step %d/%d: %s", stepNum, totalSteps, stepName)
-	status := ui.NewStatus("info", message).WithIcon("📋")
+	status := ui.NewStatus("info", message).WithIcon("[STEP]")
 	formatted := ui.WithMargin(ui.Muted, 2).Render(status.Render())
 	fmt.Println(formatted)
 }
 
 // RenderStepSuccess renders successful step completion
 func (r *RunRenderer) RenderStepSuccess(stepName string) {
-	status := ui.NewStatus("success", stepName).WithIcon("✓")
+	status := ui.NewStatus("success", stepName).WithIcon("[OK]")
 	formatted := ui.WithMargin(ui.Muted, 2).Render(status.Render())
 	fmt.Println(formatted)
 }
@@ -110,7 +117,7 @@ func (r *RunRenderer) RenderStepSuccess(stepName string) {
 // RenderStepError renders step failure
 func (r *RunRenderer) RenderStepError(stepName string, err error) {
 	message := fmt.Sprintf("%s - %v", stepName, err)
-	status := ui.NewStatus("error", message).WithIcon("❌")
+	status := ui.NewStatus("error", message).WithIcon("[FAIL]")
 	formatted := ui.WithMargin(ui.Muted, 2).Render(status.Render())
 	fmt.Println(formatted)
 }
@@ -127,7 +134,7 @@ func (r *RunRenderer) RenderDockerPull(image string) {
 func (r *RunRenderer) RenderEnvironmentSet(key, value string) {
 	renderer := ui.NewWorkflowRenderer()
 	message := renderer.RenderEnvironmentVar(key, value)
-	status := ui.NewStatus("info", message).WithIcon("🔧")
+	status := ui.NewStatus("info", message).WithIcon("[ENV]")
 	formatted := ui.WithMargin(ui.Muted, 4).Render(status.Render())
 	fmt.Println(formatted)
 }
@@ -135,7 +142,7 @@ func (r *RunRenderer) RenderEnvironmentSet(key, value string) {
 // RenderOutputSet renders step output setting
 func (r *RunRenderer) RenderOutputSet(stepID, key, value string) {
 	message := fmt.Sprintf("Set output: %s.%s=%s", stepID, key, value)
-	status := ui.NewStatus("info", message).WithIcon("📤")
+	status := ui.NewStatus("info", message).WithIcon("[OUT]")
 	formatted := ui.WithMargin(ui.Muted, 4).Render(status.Render())
 	fmt.Println(formatted)
 }
@@ -146,7 +153,7 @@ func (r *RunRenderer) RenderContainerOutput(logs string) {
 		return
 	}
 
-	outputHeader := ui.NewStatus("info", "Output:").WithIcon("📄")
+	outputHeader := ui.NewStatus("info", "Output:").WithIcon("[LOG]")
 	formatted := ui.WithMargin(ui.Muted, 4).Render(outputHeader.Render())
 	fmt.Println(formatted)
 
@@ -167,7 +174,7 @@ func (r *RunRenderer) RenderContainerOutput(logs string) {
 
 // RenderJobOutputsStart renders the start of job output processing
 func (r *RunRenderer) RenderJobOutputsStart() {
-	status := ui.NewStatus("info", "Processing job outputs:").WithIcon("📋")
+	status := ui.NewStatus("info", "Processing job outputs:").WithIcon("[STEP]")
 	formatted := ui.WithMargin(ui.Muted, 4).Render(status.Render())
 	fmt.Println(formatted)
 }
@@ -182,13 +189,13 @@ func (r *RunRenderer) RenderJobOutput(name, value string) {
 
 // RenderWorkflowSuccess renders successful workflow completion
 func (r *RunRenderer) RenderWorkflowSuccess() {
-	status := ui.NewStatus("success", "Workflow execution completed successfully!").WithIcon("✅")
+	status := ui.NewStatus("success", "Workflow execution completed successfully!").WithIcon("[OK]")
 	fmt.Println(status.Render())
 }
 
 // RenderWorkflowError renders workflow execution error
 func (r *RunRenderer) RenderWorkflowError(err error) {
-	status := ui.NewStatus("error", "Workflow execution failed:").WithIcon("❌")
+	status := ui.NewStatus("error", "Workflow execution failed:").WithIcon("[FAIL]")
 	fmt.Println(status.Render())
 
 	errorDetails := ui.NewStatus("error", "   "+err.Error())
@@ -204,14 +211,14 @@ func (r *RunRenderer) RenderExecutionSummary(jobsRun, jobsFailed, stepsRun, step
 	fmt.Println(summary)
 
 	if stepsFailed == 0 {
-		stepStatus := ui.NewStatus("success", fmt.Sprintf("%d step(s) executed successfully", stepsRun)).WithIcon("✅")
+		stepStatus := ui.NewStatus("success", fmt.Sprintf("%d step(s) executed successfully", stepsRun)).WithIcon("[OK]")
 		fmt.Println(ui.WithMargin(ui.Muted, 2).Render(stepStatus.Render()))
 	} else {
-		stepStatus := ui.NewStatus("error", fmt.Sprintf("%d step(s) executed, %d failed", stepsRun-stepsFailed, stepsFailed)).WithIcon("❌")
+		stepStatus := ui.NewStatus("error", fmt.Sprintf("%d step(s) executed, %d failed", stepsRun-stepsFailed, stepsFailed)).WithIcon("[FAIL]")
 		fmt.Println(ui.WithMargin(ui.Muted, 2).Render(stepStatus.Render()))
 	}
 
-	timeInfo := ui.NewLabelValue("⏱️  Total time:", fmt.Sprintf("%ds", totalDuration)).WithIndent(2)
+	timeInfo := ui.NewLabelValue("[TIME] Total time:", fmt.Sprintf("%ds", totalDuration)).WithIndent(2)
 	fmt.Println(timeInfo.Render())
 }
 
@@ -223,7 +230,7 @@ func (r *RunRenderer) RenderSeparator() {
 
 // RenderWarning renders a general warning message
 func (r *RunRenderer) RenderWarning(message string) {
-	warning := ui.NewStatus("warning", "Warning: "+message).WithIcon("⚠️")
+	warning := ui.NewStatus("warning", "Warning: "+message).WithIcon("[WARN]")
 	formatted := ui.WithMargin(ui.Muted, 4).Render(warning.Render())
 	fmt.Println(formatted)
 }

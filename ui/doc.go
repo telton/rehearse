@@ -11,10 +11,10 @@
 // Usage:
 //
 //	// Basic components
-//	header := ui.NewHeader("My Title").WithEmoji("🎭").WithMargin()
+//	header := ui.NewHeader("My Title").WithEmoji("*").WithMargin()
 //	fmt.Println(header.Render())
 //
-//	status := ui.NewStatus("success", "Operation completed").WithIcon("✓")
+//	status := ui.NewStatus("success", "Operation completed").WithIcon("[OK]")
 //	fmt.Println(status.Render())
 //
 //	// Workflow rendering

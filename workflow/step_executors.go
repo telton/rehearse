@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/telton/rehearse/internal/logger"
 )
 
 // ShellStepExecutor handles steps with 'run' commands.
@@ -99,6 +101,16 @@ func (e *ShellStepExecutor) Execute(ctx context.Context, step *Step, runtime *Ru
 		Status: "created",
 	}
 
+	defer func() {
+		if err := e.Docker.StopContainer(ctx, containerID); err != nil {
+			logger.Warn("Failed to stop container", "container_id", containerID, "error", err)
+		}
+		if err := e.Docker.RemoveContainer(ctx, containerID); err != nil {
+			logger.Warn("Failed to remove container", "container_id", containerID, "error", err)
+		}
+		delete(runtime.Containers, step.ID)
+	}()
+
 	if err := e.Docker.StartContainer(ctx, containerID); err != nil {
 		return nil, fmt.Errorf("failed to start container: %w", err)
 	}
@@ -120,16 +132,6 @@ func (e *ShellStepExecutor) Execute(ctx context.Context, step *Step, runtime *Ru
 	} else {
 		exitCode = 0
 	}
-
-	defer func() {
-		if err := e.Docker.StopContainer(ctx, containerID); err != nil {
-			fmt.Printf("Warning: failed to stop container %s: %v\n", containerID, err)
-		}
-		if err := e.Docker.RemoveContainer(ctx, containerID); err != nil {
-			fmt.Printf("Warning: failed to remove container %s: %v\n", containerID, err)
-		}
-		delete(runtime.Containers, step.ID)
-	}()
 
 	if containerError != nil {
 		return nil, fmt.Errorf("container execution failed: %w", containerError)
@@ -295,10 +297,10 @@ func (e *ActionStepExecutor) executeDockerAction(ctx context.Context, step *Step
 
 	defer func() {
 		if err := e.Docker.StopContainer(ctx, containerID); err != nil {
-			fmt.Printf("Warning: failed to stop container %s: %v\n", containerID, err)
+			logger.Warn("Failed to stop container", "container_id", containerID, "error", err)
 		}
 		if err := e.Docker.RemoveContainer(ctx, containerID); err != nil {
-			fmt.Printf("Warning: failed to remove container %s: %v\n", containerID, err)
+			logger.Warn("Failed to remove container", "container_id", containerID, "error", err)
 		}
 	}()
 
@@ -360,6 +362,10 @@ func (e *ActionStepExecutor) executeDockerActionFromMetadata(ctx context.Context
 		return nil, fmt.Errorf("dockerfile-based actions not yet supported")
 	}
 
+	if err := e.Docker.PullImage(ctx, image); err != nil {
+		return nil, fmt.Errorf("failed to pull image %s: %w", image, err)
+	}
+
 	env := e.buildActionEnvironment(step, runtime)
 
 	if step.With != nil {
@@ -389,10 +395,10 @@ func (e *ActionStepExecutor) executeDockerActionFromMetadata(ctx context.Context
 
 	defer func() {
 		if err := e.Docker.StopContainer(ctx, containerID); err != nil {
-			fmt.Printf("Warning: failed to stop container %s: %v\n", containerID, err)
+			logger.Warn("Failed to stop container", "container_id", containerID, "error", err)
 		}
 		if err := e.Docker.RemoveContainer(ctx, containerID); err != nil {
-			fmt.Printf("Warning: failed to remove container %s: %v\n", containerID, err)
+			logger.Warn("Failed to remove container", "container_id", containerID, "error", err)
 		}
 	}()
 
@@ -454,10 +460,10 @@ func (e *ActionStepExecutor) executeNodeAction(ctx context.Context, step *Step, 
 
 	defer func() {
 		if err := e.Docker.StopContainer(ctx, containerID); err != nil {
-			fmt.Printf("Warning: failed to stop container %s: %v\n", containerID, err)
+			logger.Warn("Failed to stop container", "container_id", containerID, "error", err)
 		}
 		if err := e.Docker.RemoveContainer(ctx, containerID); err != nil {
-			fmt.Printf("Warning: failed to remove container %s: %v\n", containerID, err)
+			logger.Warn("Failed to remove container", "container_id", containerID, "error", err)
 		}
 	}()
 
