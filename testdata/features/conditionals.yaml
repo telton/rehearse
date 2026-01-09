@@ -1,0 +1,37 @@
+name: Conditional Jobs and Steps
+on: [push, pull_request]
+
+jobs:
+  always-run:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Always Execute
+      run: echo "This always runs"
+      
+  push-only:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+    - name: Push Only
+      run: echo "Only runs on push"
+      
+  main-branch:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - name: Main Branch
+      run: echo "Only runs on main branch"
+      
+  conditional-steps:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Always Run Step
+      run: echo "Step always runs"
+      
+    - name: PR Only Step
+      if: github.event_name == 'pull_request'
+      run: echo "Only runs for pull requests"
+      
+    - name: Main Branch Step  
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: echo "Only runs on main branch pushes"

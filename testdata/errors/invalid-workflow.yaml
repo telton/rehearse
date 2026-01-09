@@ -1,0 +1,31 @@
+name: Error Scenarios
+on: push
+
+jobs:
+  syntax-error:
+    runs-on: ubuntu-latest
+    if: invalid_expression_syntax
+    steps:
+    - run: echo "This has a syntax error in the condition"
+    
+  missing-dependency:
+    runs-on: ubuntu-latest
+    needs: nonexistent-job
+    steps:
+    - run: echo "This depends on a job that doesn't exist"
+    
+  invalid-action:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: nonexistent/action@v1
+    
+  failing-step:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Step that fails
+      run: |
+        echo "This step will fail"
+        exit 1
+        
+    - name: This won't run
+      run: echo "Previous step failed"

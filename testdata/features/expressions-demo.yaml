@@ -1,0 +1,37 @@
+name: Expression Evaluation
+on: push
+
+jobs:
+  expressions:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Basic Expressions
+      run: |
+        echo "Event: ${{ github.event_name }}"
+        echo "Actor: ${{ github.actor }}"
+        echo "Repository: ${{ github.repository }}"
+        echo "Ref: ${{ github.ref }}"
+        echo "SHA: ${{ github.sha }}"
+        
+    - id: set-output
+      name: Set Step Output
+      run: |
+        echo "greeting=Hello World" >> $GITHUB_OUTPUT
+        echo "number=42" >> $GITHUB_OUTPUT
+        
+    - name: Use Step Output
+      run: |
+        echo "Greeting: ${{ steps.set-output.outputs.greeting }}"
+        echo "Number: ${{ steps.set-output.outputs.number }}"
+        
+    - name: String Functions
+      run: |
+        echo "Contains main: ${{ contains(github.ref, 'main') }}"
+        echo "Starts with refs: ${{ startsWith(github.ref, 'refs/') }}"
+        echo "Ends with main: ${{ endsWith(github.ref, 'main') }}"
+        
+    - name: Conditional Logic
+      run: |
+        echo "Is main branch: ${{ github.ref == 'refs/heads/main' }}"
+        echo "Is push event: ${{ github.event_name == 'push' }}"
+        echo "Complex: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}"

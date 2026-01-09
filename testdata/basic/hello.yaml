@@ -1,0 +1,15 @@
+name: Simple Basic Workflow
+on: push
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Say Hello
+      run: echo "Hello, World!"
+    
+    - name: Show Environment  
+      run: |
+        echo "Runner: ${{ runner.os }}"
+        echo "Event: ${{ github.event_name }}"
+        echo "Ref: ${{ github.ref }}"

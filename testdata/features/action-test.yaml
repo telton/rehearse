@@ -1,0 +1,17 @@
+name: Action Test
+
+on: push
+
+jobs:
+  checkout-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: List files
+      run: |
+        echo "Files in workspace:"
+        ls -la
+        pwd
