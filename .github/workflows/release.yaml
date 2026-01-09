@@ -11,7 +11,7 @@ permissions:
 jobs:
   # Require CI jobs to pass before releasing
   test:
-    uses: ./.github/workflows/go.yaml@main
+    uses: ./.github/workflows/go.yaml
     
   release:
     needs: test
