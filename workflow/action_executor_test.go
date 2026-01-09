@@ -84,6 +84,7 @@ func TestActionStepExecutor_Execute_LocalAction(t *testing.T) {
 	actionMetadata := CreateTestActionMetadata("docker", "my-action:latest", "")
 
 	mockGit.On("GetActionMetadata", "/tmp/workspace/my-action").Return(actionMetadata, nil)
+	mockDocker.On("PullImage", mock.Anything, "my-action:latest").Return(nil)
 	mockDocker.On("CreateContainer", mock.Anything, mock.MatchedBy(func(config *ContainerConfig) bool {
 		return config.Image == "my-action:latest"
 	})).Return("action-container", nil)

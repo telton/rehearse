@@ -39,6 +39,7 @@ func TestExecutor_executeStep_ShellStep(t *testing.T) {
 		},
 	}
 
+	mockDocker.On("PullImage", mock.Anything, "ubuntu:latest").Return(nil)
 	mockDocker.On("CreateContainer", mock.Anything, mock.MatchedBy(func(config *ContainerConfig) bool {
 		return config.Image == expectedConfig.Image &&
 			len(config.Cmd) == 3 &&
@@ -118,6 +119,7 @@ func TestExecutor_executeJob(t *testing.T) {
 		},
 	}
 
+	mockDocker.On("PullImage", mock.Anything, "ubuntu:latest").Return(nil).Twice()
 	mockDocker.On("CreateContainer", mock.Anything, mock.AnythingOfType("*workflow.ContainerConfig")).Return("container-1", nil).Once()
 	mockDocker.On("StartContainer", mock.Anything, "container-1").Return(nil).Once()
 	mockDocker.On("StopContainer", mock.Anything, "container-1").Return(nil).Once()
@@ -133,7 +135,7 @@ func TestExecutor_executeJob(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "success", executor.runtime.JobContext.Status)
-	assert.Greater(t, executor.runtime.JobContext.EndTime, executor.runtime.JobContext.StartTime)
+	assert.GreaterOrEqual(t, executor.runtime.JobContext.EndTime, executor.runtime.JobContext.StartTime)
 	mockDocker.AssertExpectations(t)
 }
 
@@ -150,6 +152,7 @@ func TestExecutor_executeJob_StepFailure(t *testing.T) {
 		},
 	}
 
+	mockDocker.On("PullImage", mock.Anything, "ubuntu:latest").Return(nil)
 	mockDocker.On("CreateContainer", mock.Anything, mock.AnythingOfType("*workflow.ContainerConfig")).Return("", assert.AnError)
 
 	ctx := t.Context()

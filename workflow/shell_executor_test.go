@@ -78,6 +78,7 @@ func TestShellStepExecutor_Execute_BasicCommand(t *testing.T) {
 		},
 	}
 
+	mockDocker.On("PullImage", mock.Anything, "ubuntu:latest").Return(nil)
 	mockDocker.On("CreateContainer", mock.Anything, mock.MatchedBy(func(config *ContainerConfig) bool {
 		return config.Image == expectedConfig.Image &&
 			len(config.Cmd) == 3 &&
@@ -103,11 +104,6 @@ func TestShellStepExecutor_Execute_BasicCommand(t *testing.T) {
 	assert.Equal(t, 0, result.ExitCode)
 	assert.NotNil(t, result.Outputs)
 
-	container, exists := runtime.Containers["echo-step"]
-	assert.True(t, exists)
-	assert.Equal(t, "container-123", container.ID)
-	assert.Equal(t, "ubuntu:latest", container.Image)
-
 	mockDocker.AssertExpectations(t)
 
 	assert.Empty(t, runtime.Containers)
@@ -125,6 +121,7 @@ func TestShellStepExecutor_Execute_CustomContainer(t *testing.T) {
 		Env:   map[string]string{"NODE_ENV": "test"},
 	}
 
+	mockDocker.On("PullImage", mock.Anything, "node:18").Return(nil)
 	mockDocker.On("CreateContainer", mock.Anything, mock.MatchedBy(func(config *ContainerConfig) bool {
 		return config.Image == "node:18" &&
 			config.Cmd[2] == "npm test"
@@ -149,6 +146,7 @@ func TestShellStepExecutor_Execute_ContainerCreationFailure(t *testing.T) {
 	step := CreateTestStep("failing-step", "Failing Step", "echo 'fail'")
 	runtime := CreateTestRuntime("/tmp/workspace")
 
+	mockDocker.On("PullImage", mock.Anything, "ubuntu:latest").Return(nil)
 	mockDocker.On("CreateContainer", mock.Anything, mock.AnythingOfType("*workflow.ContainerConfig")).Return("", assert.AnError)
 
 	ctx := t.Context()
@@ -167,8 +165,11 @@ func TestShellStepExecutor_Execute_ContainerStartFailure(t *testing.T) {
 	step := CreateTestStep("start-fail-step", "Start Fail Step", "echo 'test'")
 	runtime := CreateTestRuntime("/tmp/workspace")
 
+	mockDocker.On("PullImage", mock.Anything, "ubuntu:latest").Return(nil)
 	mockDocker.On("CreateContainer", mock.Anything, mock.AnythingOfType("*workflow.ContainerConfig")).Return("container-456", nil)
 	mockDocker.On("StartContainer", mock.Anything, "container-456").Return(assert.AnError)
+	mockDocker.On("StopContainer", mock.Anything, "container-456").Return(nil)
+	mockDocker.On("RemoveContainer", mock.Anything, "container-456").Return(nil)
 
 	ctx := t.Context()
 	result, err := executor.Execute(ctx, step, runtime)
@@ -177,11 +178,8 @@ func TestShellStepExecutor_Execute_ContainerStartFailure(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "failed to start container")
 
-	container, exists := runtime.Containers["start-fail-step"]
-	assert.True(t, exists)
-	assert.Equal(t, "container-456", container.ID)
-
 	mockDocker.AssertExpectations(t)
+	assert.Empty(t, runtime.Containers)
 }
 
 func TestShellStepExecutor_buildEnvironment(t *testing.T) {
