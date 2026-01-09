@@ -11,17 +11,18 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/telton/rehearse/workflow"
 	"github.com/urfave/cli/v3"
+
+	"github.com/telton/rehearse/workflow"
 )
 
 var (
 	// Styles for list command
-	headerStyle    = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("99"))
-	workflowStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("14"))
-	filenameStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("212"))
-	countStyle     = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("10"))
-	
+	headerStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("99"))
+	workflowStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("14"))
+	filenameStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("212"))
+	countStyle    = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("10"))
+
 	listCmd = &cli.Command{
 		Name:        "list",
 		Aliases:     []string{"ls"},
@@ -112,7 +113,7 @@ var (
 					fmt.Println(headerStyle.Render("Available Workflows"))
 					fmt.Println()
 					for _, f := range files {
-						fmt.Printf("• %s %s\n", 
+						fmt.Printf("• %s %s\n",
 							filenameStyle.Render(f.Filename),
 							workflowStyle.Render("→ "+f.WorkflowName))
 					}

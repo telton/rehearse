@@ -70,17 +70,14 @@ func NewContext(opts Options) (*Context, error) {
 		Matrix:  make(map[string]any),
 	}
 
-	// Use git ref if not overridden.
 	if ctx.GitHub.Ref == "" {
 		ctx.GitHub.Ref = gitInfo.Ref
 	}
 
-	// Default event payload.
 	if ctx.GitHub.Event == nil {
 		ctx.GitHub.Event = defaultEventPayload(opts.EventName)
 	}
 
-	// Load env from system.
 	for _, e := range os.Environ() {
 		for i := range len(e) {
 			if e[i] == '=' {

@@ -12,6 +12,7 @@ var rootCmd = &cli.Command{
 	Commands: []*cli.Command{
 		dryRunCmd,
 		listCmd,
+		runCmd,
 	},
 }
 

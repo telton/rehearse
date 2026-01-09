@@ -71,13 +71,11 @@ func execGit(args ...string) (string, error) {
 func parseRepositoryFromRemote(remote string) string {
 	remote = strings.TrimSuffix(remote, ".git")
 
-	// Handle SSH format: git@github.com/owner/repo.git.
 	if strings.HasPrefix(remote, "git@") {
 		remote = strings.TrimPrefix(remote, "git@github.com:")
 		return remote
 	}
 
-	// Handle HTTPS format: https://github.com/owner/repo.git.
 	parts := strings.Split(remote, "/")
 	if len(parts) >= 2 {
 		return parts[len(parts)-2] + "/" + parts[len(parts)-1]
