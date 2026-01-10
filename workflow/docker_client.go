@@ -2,6 +2,7 @@ package workflow
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -9,21 +10,24 @@ import (
 	"github.com/moby/moby/api/types/mount"
 	"github.com/moby/moby/api/types/network"
 	"github.com/moby/moby/client"
+
+	"github.com/telton/rehearse/ui"
 )
 
 // RealDockerClient implements DockerClient using the actual Docker SDK.
 type RealDockerClient struct {
 	client *client.Client
+	writer io.Writer
 }
 
 // NewDockerClient creates a new Docker client.
-func NewDockerClient() (DockerClient, error) {
+func NewDockerClient(w io.Writer) (DockerClient, error) {
 	cli, err := client.New(client.FromEnv)
 	if err != nil {
 		return nil, err
 	}
 
-	return &RealDockerClient{client: cli}, nil
+	return &RealDockerClient{client: cli, writer: w}, nil
 }
 
 // CreateContainer creates a new Docker container.
@@ -99,6 +103,9 @@ func (d *RealDockerClient) RemoveContainer(ctx context.Context, containerID stri
 
 // PullImage pulls a Docker image.
 func (d *RealDockerClient) PullImage(ctx context.Context, imageName string) error {
+	renderer := ui.NewWorkflowRenderer()
+	fmt.Fprintln(d.writer, renderer.RenderDockerOperation("Pulling image", imageName))
+
 	pullOptions := client.ImagePullOptions{}
 	reader, err := d.client.ImagePull(ctx, imageName, pullOptions)
 	if err != nil {
@@ -106,9 +113,52 @@ func (d *RealDockerClient) PullImage(ctx context.Context, imageName string) erro
 	}
 	defer reader.Close()
 
-	_, err = io.Copy(io.Discard, reader)
+	// Track layers to avoid duplicate output
+	layerStatus := make(map[string]string)
+	decoder := json.NewDecoder(reader)
 
-	return err
+	for {
+		var event struct {
+			Status         string `json:"status"`
+			Progress       string `json:"progress"`
+			ProgressDetail struct {
+				Current int64 `json:"current"`
+				Total   int64 `json:"total"`
+			} `json:"progressDetail"`
+			ID string `json:"id"`
+		}
+
+		if err := decoder.Decode(&event); err != nil {
+			if err == io.EOF {
+				break
+			}
+			return err
+		}
+
+		// Only show meaningful status changes
+		if event.ID != "" {
+			key := event.ID + event.Status
+			if layerStatus[key] != event.Status {
+				layerStatus[key] = event.Status
+
+				// Show status without progress bar noise
+				switch event.Status {
+				case "Downloading", "Extracting":
+					statusText := fmt.Sprintf("  %s: %s", event.ID[:12], event.Status)
+					fmt.Fprintln(d.writer, ui.Muted.Render(statusText))
+				case "Pull complete":
+					statusText := fmt.Sprintf("  %s: Pull complete", event.ID[:12])
+					fmt.Fprintln(d.writer, ui.Success.Render(statusText))
+				}
+			}
+		} else if event.Status != "" {
+			// Top-level status messages
+			fmt.Fprintln(d.writer, ui.Info.Render("  "+event.Status))
+		}
+	}
+
+	fmt.Fprintln(d.writer, ui.Success.Render("✓ Image pulled successfully"))
+	return nil
 }
 
 // WaitForContainer waits for a container to finish and returns its exit code.
