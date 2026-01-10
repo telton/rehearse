@@ -343,7 +343,7 @@ func (e *Executor) processStepOutputFiles(stepID string) error {
 		}
 
 		if err := os.WriteFile(envFile, []byte{}, 0600); err != nil {
-			return fmt.Errorf("failed to clear GITHUB_ENV file: %w", err)
+			return fmt.Errorf("clear GITHUB_ENV file: %w", err)
 		}
 	}
 
@@ -372,7 +372,7 @@ func (e *Executor) processStepOutputFiles(stepID string) error {
 		}
 
 		if err := os.WriteFile(outputFile, []byte{}, 0600); err != nil {
-			return fmt.Errorf("failed to clear GITHUB_OUTPUT file: %w", err)
+			return fmt.Errorf("clear GITHUB_OUTPUT file: %w", err)
 		}
 	}
 

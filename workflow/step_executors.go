@@ -33,7 +33,7 @@ func (e *ShellStepExecutor) Execute(ctx context.Context, step *Step, runtime *Ru
 		e.renderer.RenderDockerPull(image)
 	}
 	if err := e.Docker.PullImage(ctx, image); err != nil {
-		return nil, fmt.Errorf("failed to pull image %s: %w", image, err)
+		return nil, fmt.Errorf("pull image %s: %w", image, err)
 	}
 
 	evaluatedCommand := e.evaluateExpressions(step.Run, runtime)
@@ -54,12 +54,12 @@ func (e *ShellStepExecutor) Execute(ctx context.Context, step *Step, runtime *Ru
 
 		if _, err := os.Stat(envFile); os.IsNotExist(err) {
 			if err := os.WriteFile(envFile, []byte{}, 0600); err != nil {
-				return nil, fmt.Errorf("failed to create GITHUB_ENV file: %w", err)
+				return nil, fmt.Errorf("create GITHUB_ENV file: %w", err)
 			}
 		}
 		if _, err := os.Stat(outputFile); os.IsNotExist(err) {
 			if err := os.WriteFile(outputFile, []byte{}, 0600); err != nil {
-				return nil, fmt.Errorf("failed to create GITHUB_OUTPUT file: %w", err)
+				return nil, fmt.Errorf("create GITHUB_OUTPUT file: %w", err)
 			}
 		}
 
@@ -92,7 +92,7 @@ func (e *ShellStepExecutor) Execute(ctx context.Context, step *Step, runtime *Ru
 
 	containerID, err := e.Docker.CreateContainer(ctx, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create container: %w", err)
+		return nil, fmt.Errorf("create container: %w", err)
 	}
 
 	runtime.Containers[step.ID] = &ContainerInfo{
@@ -112,7 +112,7 @@ func (e *ShellStepExecutor) Execute(ctx context.Context, step *Step, runtime *Ru
 	}()
 
 	if err := e.Docker.StartContainer(ctx, containerID); err != nil {
-		return nil, fmt.Errorf("failed to start container: %w", err)
+		return nil, fmt.Errorf("start container: %w", err)
 	}
 
 	runtime.Containers[step.ID].Status = "running"
@@ -261,7 +261,7 @@ func (e *ActionStepExecutor) executeLocalAction(ctx context.Context, step *Step,
 
 	metadata, err := e.Git.GetActionMetadata(fullPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load action metadata: %w", err)
+		return nil, fmt.Errorf("led to load action metadata: %w", err)
 	}
 
 	return e.executeActionWithMetadata(ctx, step, runtime, metadata, fullPath)
@@ -272,7 +272,7 @@ func (e *ActionStepExecutor) executeDockerAction(ctx context.Context, step *Step
 	image := strings.TrimPrefix(dockerRef, "docker://")
 
 	if err := e.Docker.PullImage(ctx, image); err != nil {
-		return nil, fmt.Errorf("failed to pull image %s: %w", image, err)
+		return nil, fmt.Errorf("pull image %s: %w", image, err)
 	}
 
 	env := e.buildActionEnvironment(step, runtime)
@@ -292,7 +292,7 @@ func (e *ActionStepExecutor) executeDockerAction(ctx context.Context, step *Step
 
 	containerID, err := e.Docker.CreateContainer(ctx, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create container: %w", err)
+		return nil, fmt.Errorf("create container: %w", err)
 	}
 
 	defer func() {
@@ -305,7 +305,7 @@ func (e *ActionStepExecutor) executeDockerAction(ctx context.Context, step *Step
 	}()
 
 	if err := e.Docker.StartContainer(ctx, containerID); err != nil {
-		return nil, fmt.Errorf("failed to start container: %w", err)
+		return nil, fmt.Errorf("start container: %w", err)
 	}
 
 	return &ExecutionStepResult{
@@ -329,12 +329,12 @@ func (e *ActionStepExecutor) executeRepositoryAction(ctx context.Context, step *
 
 	repoURL := fmt.Sprintf("https://github.com/%s", repo)
 	if err := e.Git.CloneAction(ctx, repoURL, ref, actionDir); err != nil {
-		return nil, fmt.Errorf("failed to clone action %s: %w", repoRef, err)
+		return nil, fmt.Errorf("clone action %s: %w", repoRef, err)
 	}
 
 	metadata, err := e.Git.GetActionMetadata(actionDir)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load action metadata for %s: %w", repoRef, err)
+		return nil, fmt.Errorf("led to load action metadata for %s: %w", repoRef, err)
 	}
 
 	return e.executeActionWithMetadata(ctx, step, runtime, metadata, actionDir)
@@ -345,7 +345,7 @@ func (e *ActionStepExecutor) executeActionWithMetadata(ctx context.Context, step
 	switch metadata.Runs.Using {
 	case "docker":
 		return e.executeDockerActionFromMetadata(ctx, step, runtime, metadata, actionPath)
-	case "node16", "node20":
+	case "node16", "node20", "node22", "node24":
 		return e.executeNodeAction(ctx, step, runtime, metadata, actionPath)
 	case "composite":
 		return e.executeCompositeAction(ctx, step, runtime, metadata, actionPath)
@@ -363,7 +363,7 @@ func (e *ActionStepExecutor) executeDockerActionFromMetadata(ctx context.Context
 	}
 
 	if err := e.Docker.PullImage(ctx, image); err != nil {
-		return nil, fmt.Errorf("failed to pull image %s: %w", image, err)
+		return nil, fmt.Errorf("pull image %s: %w", image, err)
 	}
 
 	env := e.buildActionEnvironment(step, runtime)
@@ -390,7 +390,7 @@ func (e *ActionStepExecutor) executeDockerActionFromMetadata(ctx context.Context
 
 	containerID, err := e.Docker.CreateContainer(ctx, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create container: %w", err)
+		return nil, fmt.Errorf("create container: %w", err)
 	}
 
 	defer func() {
@@ -403,7 +403,7 @@ func (e *ActionStepExecutor) executeDockerActionFromMetadata(ctx context.Context
 	}()
 
 	if err := e.Docker.StartContainer(ctx, containerID); err != nil {
-		return nil, fmt.Errorf("failed to start container: %w", err)
+		return nil, fmt.Errorf("start container: %w", err)
 	}
 
 	return &ExecutionStepResult{
@@ -418,6 +418,11 @@ func (e *ActionStepExecutor) executeNodeAction(ctx context.Context, step *Step, 
 	nodeImage := "node:16"
 	if metadata.Runs.Using == "node20" {
 		nodeImage = "node:20"
+	}
+
+	// Pull the image if it doesn't exist locally.
+	if err := e.Docker.PullImage(ctx, nodeImage); err != nil {
+		return nil, fmt.Errorf("pull image %s: %w", nodeImage, err)
 	}
 
 	env := e.buildActionEnvironment(step, runtime)
@@ -455,7 +460,7 @@ func (e *ActionStepExecutor) executeNodeAction(ctx context.Context, step *Step, 
 
 	containerID, err := e.Docker.CreateContainer(ctx, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create container: %w", err)
+		return nil, fmt.Errorf("create container: %w", err)
 	}
 
 	defer func() {
@@ -468,7 +473,7 @@ func (e *ActionStepExecutor) executeNodeAction(ctx context.Context, step *Step, 
 	}()
 
 	if err := e.Docker.StartContainer(ctx, containerID); err != nil {
-		return nil, fmt.Errorf("failed to start container: %w", err)
+		return nil, fmt.Errorf("start container: %w", err)
 	}
 
 	return &ExecutionStepResult{

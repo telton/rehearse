@@ -144,7 +144,7 @@ func runWorkflow(ctx context.Context, config runConfig) error {
 	renderer.RenderDockerSuccess()
 
 	renderer.RenderDockerInit()
-	dockerClient, err := workflow.NewDockerClient()
+	dockerClient, err := workflow.NewDockerClient(os.Stderr)
 	if err != nil {
 		return fmt.Errorf("initializing Docker client: %w", err)
 	}
@@ -175,7 +175,7 @@ func runWorkflow(ctx context.Context, config runConfig) error {
 
 // validateDockerAvailable checks if Docker is available and running.
 func validateDockerAvailable() error {
-	dockerClient, err := workflow.NewDockerClient()
+	dockerClient, err := workflow.NewDockerClient(os.Stderr)
 	if err != nil {
 		return fmt.Errorf("docker is not available: %w", err)
 	}

@@ -30,7 +30,10 @@ func (g *RealGitRepo) CloneAction(ctx context.Context, repo, ref, dest string) e
 		// If branch doesn't exist, try as a commit SHA.
 		cmd = exec.CommandContext(ctx, "git", "clone", repo, dest)
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("cloning repository %s: %w", repo, err)
+			// If we error out trying to clone, it might be because the directory already exists.
+			if _, fileErr := os.Stat(dest); fileErr != nil {
+				return fmt.Errorf("cloning repository %s: %w", repo, err)
+			}
 		}
 
 		// Checkout the specific commit.
