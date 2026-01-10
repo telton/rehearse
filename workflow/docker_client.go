@@ -1,6 +1,7 @@
 package workflow
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -79,7 +80,71 @@ func (d *RealDockerClient) StartContainer(ctx context.Context, containerID strin
 
 // ExecInContainer executes a command inside a container.
 func (d *RealDockerClient) ExecInContainer(ctx context.Context, containerID string, cmd []string) (*ExecResult, error) {
-	return nil, ErrNotImplemented
+	execConfig := client.ExecCreateOptions{
+		AttachStdout: true,
+		AttachStderr: true,
+		Cmd:          cmd,
+	}
+
+	execIDResp, err := d.client.ExecCreate(ctx, containerID, execConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create exec: %w", err)
+	}
+
+	resp, err := d.client.ExecAttach(ctx, execIDResp.ID, client.ExecAttachOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to attach to exec: %w", err)
+	}
+	defer resp.Close()
+
+	var stdoutBuf, stderrBuf bytes.Buffer
+
+	if err := demuxDockerStream(resp.Reader, &stdoutBuf, &stderrBuf); err != nil {
+		return nil, fmt.Errorf("failed to read exec output: %w", err)
+	}
+
+	inspectResp, err := d.client.ExecInspect(ctx, execIDResp.ID, client.ExecInspectOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to inspect exec: %w", err)
+	}
+
+	return &ExecResult{
+		ExitCode: inspectResp.ExitCode,
+		Stdout:   stdoutBuf.String(),
+		Stderr:   stderrBuf.String(),
+	}, nil
+}
+
+// demuxDockerStream manually demultiplexes Docker's multiplexed stream format
+func demuxDockerStream(src io.Reader, stdout, stderr io.Writer) error {
+	header := make([]byte, 8)
+	for {
+		_, err := io.ReadFull(src, header)
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+
+		// Stream type: 0=stdin, 1=stdout, 2=stderr
+		streamType := header[0]
+		// Payload size is in header[4:8] (big endian)
+		size := int(header[4])<<24 | int(header[5])<<16 | int(header[6])<<8 | int(header[7])
+
+		payload := make([]byte, size)
+		_, err = io.ReadFull(src, payload)
+		if err != nil {
+			return err
+		}
+
+		switch streamType {
+		case 1: // stdout
+			stdout.Write(payload)
+		case 2: // stderr
+			stderr.Write(payload)
+		}
+	}
 }
 
 // StopContainer stops a Docker container.
