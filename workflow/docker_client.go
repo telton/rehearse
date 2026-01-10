@@ -228,7 +228,19 @@ func (d *RealDockerClient) PullImage(ctx context.Context, imageName string) erro
 
 // WaitForContainer waits for a container to finish and returns its exit code.
 func (d *RealDockerClient) WaitForContainer(ctx context.Context, containerID string) (int, error) {
-	return -1, ErrNotImplemented
+	chans := d.client.ContainerWait(ctx, containerID, client.ContainerWaitOptions{})
+
+	select {
+	case err := <-chans.Error:
+		if err != nil {
+			return -1, fmt.Errorf("wait for container: %w", err)
+		}
+		return -1, fmt.Errorf("error channel closed without error")
+	case result := <-chans.Result:
+		return int(result.StatusCode), nil
+	case <-ctx.Done():
+		return -1, ctx.Err()
+	}
 }
 
 // GetContainerLogs retrieves logs from a container.
@@ -268,6 +280,3 @@ func (d *RealDockerClient) Ping(ctx context.Context) (string, error) {
 	}
 	return ping.APIVersion, nil
 }
-
-// ErrNotImplemented is returned for methods not yet implemented in the Moby client
-var ErrNotImplemented = fmt.Errorf("method not implemented in current Moby client version")
